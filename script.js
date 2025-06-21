@@ -1,4 +1,3 @@
-  // IMPORTANT: Replace 'YOUR_YOUTUBE_API_KEY' with your actual YouTube Data API key.
     const apiKey = 'AIzaSyDHP2EWHt-9Pm4_L20lHeVt3Qotb8WYIZU';
     const searchInput = document.getElementById('search');
     const clearBtn = document.getElementById('clearSearch');
@@ -11,13 +10,11 @@
     const activePlaylistSelector = document.getElementById('activePlaylistSelector');
     const navLinks = document.getElementById('navLinks');
     const hamburgerMenu = document.querySelector('.hamburger-menu');
-    const playlistVideoPlayerDiv = document.getElementById('playlistVideoPlayer');
-    const recentlyPlayedVideoPlayerDiv = document.getElementById('recentlyPlayedVideoPlayer');
 
 
-    let ytPlayer = null; // YouTube Player instance
+    let currentVideo = null;
+    let ytPlayer = null;
     let currentPlaylistIndex = -1;
-    let currentPlayingVideoId = null; // Track the currently playing video ID
 
     // --- Data Storage ---
     // Structure for multiple playlists
@@ -74,34 +71,12 @@
       }
       currentPageId = newId; // Update current page ID
 
-      // Hide all visible player containers initially
-      playlistVideoPlayerDiv.innerHTML = '';
-      recentlyPlayedVideoPlayerDiv.innerHTML = '';
-      waveformVisualizer.style.display = 'none';
-
-
       // Refresh content for specific pages when switched to
       if (newId === 'playlistPage') {
           updatePlaylistSelector();
           updatePlaylist();
       } else if (newId === 'recentlyPlayedPage') {
           updateRecentlyPlayed();
-      }
-
-      // If a video is currently playing, display it on the current page if it's the playlist or recent page
-      if (currentPlayingVideoId && ytPlayer && ytPlayer.getPlayerState() === YT.PlayerState.PLAYING) {
-          const targetPlayerDiv = (newId === 'playlistPage') ? playlistVideoPlayerDiv :
-                                   (newId === 'recentlyPlayedPage') ? recentlyPlayedVideoPlayerDiv : null;
-
-          if (targetPlayerDiv) {
-              const iframe = document.createElement('iframe');
-              iframe.src = `https://www.youtube.com/embed/${currentPlayingVideoId}?autoplay=1&enablejsapi=1`;
-              iframe.setAttribute('allow', 'autoplay; encrypted-media');
-              iframe.setAttribute('allowfullscreen', '');
-              iframe.id = 'currentPagePlayer'; // Give it a unique ID for the visible player
-              targetPlayerDiv.appendChild(iframe);
-              waveformVisualizer.style.display = 'block';
-          }
       }
     }
 
@@ -163,7 +138,7 @@
         const row = document.createElement('div');
         row.className = 'content-row';
         row.innerHTML = `
-          <img src="https://img.youtube.com/vi/${item.id.videoId}/default.jpg" alt="${item.snippet.title}" />
+          <img src="http://img.youtube.com/vi/${item.id.videoId}/default.jpg" alt="${item.snippet.title}" />
           <p>${item.snippet.title}</p>
           <button class="small-btn">Save to Playlist</button>
         `;
@@ -172,46 +147,37 @@
           saveToActivePlaylist(item.snippet.title, item.id.videoId);
         };
         li.appendChild(row);
-        li.onclick = () => playVideo(item.id.videoId, item.snippet.title);
+        li.onclick = () => playVideoInline(li, item.id.videoId, item.snippet.title);
         resultsList.appendChild(li);
       });
     }
 
-    // --- Video Playback (updated for persistent player and visualizer) ---
-    function playVideo(videoId, title) {
-        // Hide existing visible players
-        playlistVideoPlayerDiv.innerHTML = '';
-        recentlyPlayedVideoPlayerDiv.innerHTML = '';
+    // --- Video Playback (updated for recently played & visualizer) ---
+    function playVideoInline(container, videoId, title) {
+      if (currentVideo) currentVideo.remove();
+      if (ytPlayer && ytPlayer.destroy) ytPlayer.destroy(); // Ensure old player is destroyed
 
-        currentPlayingVideoId = videoId; // Set the currently playing video ID
+      const wrapper = document.createElement('div');
+      wrapper.className = 'video-wrapper';
+      wrapper.innerHTML = `<iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1" allow="autoplay; encrypted-media" allowfullscreen id="ytPlayerEmbed"></iframe>`;
+      container.appendChild(wrapper);
+      currentVideo = wrapper;
 
-        // Update the source of the persistent player
-        if (ytPlayer && ytPlayer.loadVideoById) {
-            ytPlayer.loadVideoById(videoId);
-            ytPlayer.playVideo(); // Ensure it starts playing
-        } else {
-            console.warn("YouTube Iframe API not fully initialized or player not ready.");
-            // Fallback for initial load if API isn't ready immediately
-            // This case should be rare if API is loaded via script tag properly.
-        }
+      addRecentlyPlayed(title, videoId); // Add to recently played
 
-        addRecentlyPlayed(title, videoId); // Add to recently played
+      // Show waveform visualizer
+      waveformVisualizer.style.display = 'block';
 
-        // Show waveform visualizer
-        waveformVisualizer.style.display = 'block';
-
-        // Embed a visible player on the current active page
-        const targetPlayerDiv = (currentPageId === 'playlistPage') ? playlistVideoPlayerDiv :
-                                (currentPageId === 'recentlyPlayedPage') ? recentlyPlayedVideoPlayerDiv : null;
-
-        if (targetPlayerDiv) {
-            const iframe = document.createElement('iframe');
-            iframe.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&enablejsapi=1`;
-            iframe.setAttribute('allow', 'autoplay; encrypted-media');
-            iframe.setAttribute('allowfullscreen', '');
-            iframe.id = 'currentPagePlayer'; // Give it a unique ID for the visible player
-            targetPlayerDiv.appendChild(iframe);
-        }
+      // Initialize YouTube Player
+      if (window.YT && window.YT.Player) {
+          ytPlayer = new YT.Player('ytPlayerEmbed', {
+              events: {
+                  'onStateChange': onPlayerStateChange
+              }
+          });
+      } else {
+          console.warn("YouTube Iframe API not ready yet. Video playback might not fully support events.");
+      }
     }
 
     function onPlayerStateChange(event) {
@@ -227,7 +193,8 @@
             const next = currentPlaylistIndex + 1;
             if (next < activePlaylist.songs.length) {
                 currentPlaylistIndex = next;
-                playVideo(activePlaylist.songs[next].videoId, activePlaylist.songs[next].title);
+                const nextLi = playlistItems.children[next];
+                playPlaylistVideo(nextLi, activePlaylist.songs[next].videoId, activePlaylist.songs[next].title);
             } else {
                 // End of playlist
                 waveformVisualizer.style.display = 'none';
@@ -344,7 +311,7 @@
         const row = document.createElement('div');
         row.className = 'content-row';
         row.innerHTML = `
-          <img src="https://img.youtube.com/vi/${song.videoId}/default.jpg" alt="${song.title}" />
+          <img src="http://img.youtube.com/vi/${song.videoId}/default.jpg" alt="${song.title}" />
           <p>${song.title}</p>
           <button class="small-btn">Remove</button>
         `;
@@ -355,7 +322,7 @@
         li.appendChild(row);
         li.onclick = () => {
           currentPlaylistIndex = index;
-          playVideo(song.videoId, song.title);
+          playPlaylistVideo(li, song.videoId, song.title);
         };
         playlistItems.appendChild(li);
       });
@@ -366,6 +333,11 @@
       saveUserPlaylists();
       updatePlaylist();
       sendNotification('Song Removed', 'Song removed from playlist.');
+    }
+
+    function playPlaylistVideo(container, videoId, title) {
+      // Re-use playVideoInline for consistent playback logic
+      playVideoInline(container, videoId, title);
     }
 
     // --- Recently Played ---
@@ -390,14 +362,17 @@
             const li = document.createElement('li');
             li.innerHTML = `
                 <div class="content-row">
-                    <img src="https://img.youtube.com/vi/${song.videoId}/default.jpg" alt="${song.title}" />
+                    <img src="http://img.youtube.com/vi/${song.videoId}/default.jpg" alt="${song.title}" />
                     <p>${song.title}</p>
                     <button class="small-btn">Play</button>
                 </div>
             `;
             li.querySelector('button').onclick = e => {
                 e.stopPropagation();
-                playVideo(song.videoId, song.title);
+                // To play from recently played, we switch to playlist page and display the video there.
+                // This might mean the user has to scroll to see it if it's not immediately visible.
+                switchPage('playlistPage', document.querySelector('.nav-links a[onclick*="playlistPage"]'));
+                playVideoInline(document.getElementById('playlistPage'), song.videoId, song.title); // Attach to playlist page
             };
             recentlyPlayedList.appendChild(li);
         });
@@ -439,32 +414,8 @@
     }
 
     // --- YouTube Iframe API Ready ---
-    // This function is called by the YouTube Iframe API when it's ready.
     function onYouTubeIframeAPIReady() {
-        ytPlayer = new YT.Player('persistentPlayer', {
-            height: '1',
-            width: '1',
-            videoId: '', // Start with no video loaded
-            playerVars: {
-                'playsinline': 1,
-                'autoplay': 0,
-                'controls': 0, // No controls for the hidden player
-                'modestbranding': 1,
-                'rel': 0,
-                'disablekb': 1,
-                'fs': 0
-            },
-            events: {
-                'onReady': (event) => {
-                    console.log("Persistent YouTube Player ready.");
-                    // If a video was playing before page reload, try to resume
-                    if (currentPlayingVideoId) {
-                        event.target.loadVideoById(currentPlayingVideoId);
-                    }
-                },
-                'onStateChange': onPlayerStateChange
-            }
-        });
+        console.log("YouTube Iframe API is ready.");
     }
 
     // --- Service Worker Registration ---
