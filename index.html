@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AllPlay 🎶</title>
-  <link rel="icon" href="./allplay-icon.png" />
-  <link rel="manifest" href="./manifest.json" />
+  <link rel="icon" href="./allplay-icon.png"/>
+  <link rel="manifest" href="./manifest.json"/>
   <style>
     :root {
       --bg: #f9f9fb;
@@ -15,7 +15,7 @@
       --glass: rgba(255, 255, 255, 0.7);
       --glass-dark: rgba(0, 0, 0, 0.5);
       --shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-      --transition-duration: 0.4s; /* For smooth transitions */
+      --transition-duration: 0.4s;
     }
 
     [data-theme="dark"] {
@@ -28,17 +28,17 @@
 
     * {
       box-sizing: border-box;
-      transition: all 0.3s ease; /* Keep general transitions */
+      transition: all 0.3s ease;
+      margin: 0;
+      padding: 0;
     }
 
     body {
-      margin: 0;
       font-family: "Segoe UI", sans-serif;
       background-color: var(--bg);
       color: var(--text);
     }
 
-    /* Responsive Navigation */
     .navbar {
       position: fixed;
       width: 100%;
@@ -64,7 +64,7 @@
       font-weight: 600;
       font-size: 18px;
       position: relative;
-      padding: 5px 0; /* Add padding for better touch target */
+      padding: 5px 0;
     }
 
     .nav-links a.active::after {
@@ -79,7 +79,7 @@
     }
 
     .hamburger-menu {
-      display: none; /* Hidden by default on larger screens */
+      display: none;
       flex-direction: column;
       cursor: pointer;
       padding: 5px;
@@ -93,14 +93,13 @@
       transition: 0.4s;
     }
 
-    /* Styles for mobile navigation */
     @media (max-width: 768px) {
       .nav-links {
-        display: none; /* Hide nav links by default on small screens */
+        display: none;
         flex-direction: column;
         width: 100%;
         position: absolute;
-        top: 60px; /* Adjust based on navbar height */
+        top: 60px;
         left: 0;
         background: var(--glass);
         box-shadow: var(--shadow);
@@ -110,32 +109,27 @@
       }
 
       .nav-links.active {
-        display: flex; /* Show nav links when active */
+        display: flex;
       }
 
       .hamburger-menu {
-        display: flex; /* Show hamburger menu on small screens */
+        display: flex;
       }
 
-      .navbar {
-        justify-content: space-between; /* Space out items */
-      }
-
-      /* Animate hamburger to X */
       .hamburger-menu.open .bar:nth-child(1) {
         transform: rotate(-45deg) translate(-5px, 6px);
       }
+
       .hamburger-menu.open .bar:nth-child(2) {
         opacity: 0;
       }
+
       .hamburger-menu.open .bar:nth-child(3) {
         transform: rotate(45deg) translate(-5px, -6px);
       }
     }
 
-
     .theme-toggle {
-      position: static; /* Adjusted for navbar flow */
       background: var(--glass);
       border: none;
       padding: 8px 12px;
@@ -143,11 +137,10 @@
       cursor: pointer;
       color: var(--text);
       font-size: 16px;
-      z-index: 1000;
     }
 
     .page {
-      position: absolute; /* Changed for transitions */
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -155,17 +148,17 @@
       margin: 100px auto 40px;
       padding: 0 20px;
       opacity: 0;
-      pointer-events: none; /* Prevents interaction when hidden */
-      transform: translateY(20px); /* Initial transform for entrance */
+      pointer-events: none;
+      transform: translateY(20px);
       transition: opacity var(--transition-duration) ease-in-out, transform var(--transition-duration) ease-in-out;
-      z-index: 1; /* For stacking during transitions */
+      z-index: 1;
     }
 
     .page.active {
       opacity: 1;
       pointer-events: auto;
       transform: translateY(0);
-      position: relative; /* Bring back to normal flow for active page */
+      position: relative;
       z-index: 2;
     }
 
@@ -238,7 +231,7 @@
       display: none;
     }
 
-     ul {
+    ul {
       list-style: none;
       padding: 0;
     }
@@ -278,7 +271,7 @@
       font-size: 16px;
     }
 
- .video-wrapper iframe {
+    .video-wrapper iframe {
       width: 100%;
       height: 360px;
       border: none;
@@ -286,7 +279,7 @@
       margin-top: 15px;
     }
 
-button.small-btn {
+    button.small-btn {
       background: var(--accent);
       color: white;
       border: none;
@@ -296,14 +289,14 @@ button.small-btn {
       cursor: pointer;
     }
 
-    /* New styles for playlists */
     .playlist-management {
       display: flex;
       justify-content: center;
       gap: 10px;
       margin-bottom: 20px;
-      flex-wrap: wrap; /* Allow wrapping on small screens */
+      flex-wrap: wrap;
     }
+
     .playlist-management button, .playlist-management input {
       padding: 8px 15px;
       border-radius: 8px;
@@ -311,33 +304,34 @@ button.small-btn {
       background: var(--card);
       color: var(--text);
     }
+
     .playlist-management button {
       background: var(--accent);
       color: white;
       cursor: pointer;
     }
+
     .playlist-selector {
-        width: 100%;
-        padding: 8px;
-        border-radius: 8px;
-        border: 1px solid var(--accent);
-        background: var(--card);
-        color: var(--text);
-        margin-bottom: 15px;
-        max-width: 400px; /* Limit width */
-        margin-left: auto;
-        margin-right: auto;
-        display: block;
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--card);
+      color: var(--text);
+      margin-bottom: 15px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
     }
 
-    /* Waveform Visualizer Placeholder */
     #waveformVisualizer {
       width: 100%;
-      height: 80px; /* Adjust height as needed */
+      height: 80px;
       background: linear-gradient(to right, var(--accent) 0%, rgba(255, 75, 92, 0.3) 100%);
       border-radius: 10px;
       margin-top: 15px;
-      display: none; /* Will be shown when a video is playing */
+      display: none;
       overflow: hidden;
       position: relative;
     }
@@ -345,7 +339,7 @@ button.small-btn {
     .waveform-bar {
       position: absolute;
       bottom: 0;
-      width: 2px; /* Width of each bar */
+      width: 2px;
       background-color: var(--text);
       animation: waveform-animation 1s infinite alternate ease-in-out;
     }
@@ -355,48 +349,6 @@ button.small-btn {
       50% { height: 80%; }
       100% { height: 10%; }
     }
-
-    /* Individual bar animations - adjusted for more bars/even distribution */
-    .waveform-bar:nth-child(1) { left: 2.5%; animation-delay: 0s; }
-    .waveform-bar:nth-child(2) { left: 5%; animation-delay: -0.05s; }
-    .waveform-bar:nth-child(3) { left: 7.5%; animation-delay: -0.1s; }
-    .waveform-bar:nth-child(4) { left: 10%; animation-delay: -0.15s; }
-    .waveform-bar:nth-child(5) { left: 12.5%; animation-delay: -0.2s; }
-    .waveform-bar:nth-child(6) { left: 15%; animation-delay: -0.25s; }
-    .waveform-bar:nth-child(7) { left: 17.5%; animation-delay: -0.3s; }
-    .waveform-bar:nth-child(8) { left: 20%; animation-delay: -0.35s; }
-    .waveform-bar:nth-child(9) { left: 22.5%; animation-delay: -0.4s; }
-    .waveform-bar:nth-child(10) { left: 25%; animation-delay: -0.45s; }
-    .waveform-bar:nth-child(11) { left: 27.5%; animation-delay: -0.5s; }
-    .waveform-bar:nth-child(12) { left: 30%; animation-delay: -0.55s; }
-    .waveform-bar:nth-child(13) { left: 32.5%; animation-delay: -0.6s; }
-    .waveform-bar:nth-child(14) { left: 35%; animation-delay: -0.65s; }
-    .waveform-bar:nth-child(15) { left: 37.5%; animation-delay: -0.7s; }
-    .waveform-bar:nth-child(16) { left: 40%; animation-delay: -0.75s; }
-    .waveform-bar:nth-child(17) { left: 42.5%; animation-delay: -0.8s; }
-    .waveform-bar:nth-child(18) { left: 45%; animation-delay: -0.85s; }
-    .waveform-bar:nth-child(19) { left: 47.5%; animation-delay: -0.9s; }
-    .waveform-bar:nth-child(20) { left: 50%; animation-delay: -0.95s; }
-    .waveform-bar:nth-child(21) { left: 52.5%; animation-delay: -1.0s; }
-    .waveform-bar:nth-child(22) { left: 55%; animation-delay: -1.05s; }
-    .waveform-bar:nth-child(23) { left: 57.5%; animation-delay: -1.1s; }
-    .waveform-bar:nth-child(24) { left: 60%; animation-delay: -1.15s; }
-    .waveform-bar:nth-child(25) { left: 62.5%; animation-delay: -1.2s; }
-    .waveform-bar:nth-child(26) { left: 65%; animation-delay: -1.25s; }
-    .waveform-bar:nth-child(27) { left: 67.5%; animation-delay: -1.3s; }
-    .waveform-bar:nth-child(28) { left: 70%; animation-delay: -1.35s; }
-    .waveform-bar:nth-child(29) { left: 72.5%; animation-delay: -1.4s; }
-    .waveform-bar:nth-child(30) { left: 75%; animation-delay: -1.45s; }
-    .waveform-bar:nth-child(31) { left: 77.5%; animation-delay: -1.5s; }
-    .waveform-bar:nth-child(32) { left: 80%; animation-delay: -1.55s; }
-    .waveform-bar:nth-child(33) { left: 82.5%; animation-delay: -1.6s; }
-    .waveform-bar:nth-child(34) { left: 85%; animation-delay: -1.65s; }
-    .waveform-bar:nth-child(35) { left: 87.5%; animation-delay: -1.7s; }
-    .waveform-bar:nth-child(36) { left: 90%; animation-delay: -1.75s; }
-    .waveform-bar:nth-child(37) { left: 92.5%; animation-delay: -1.8s; }
-    .waveform-bar:nth-child(38) { left: 95%; animation-delay: -1.85s; }
-    .waveform-bar:nth-child(39) { left: 97.5%; animation-delay: -1.9s; }
-
 
     footer {
       text-align: center;
@@ -412,67 +364,69 @@ button.small-btn {
 </head>
 <body data-theme="light">
 
-  <div class="navbar">
-    <div class="hamburger-menu" onclick="toggleMobileMenu()">
-      <div class="bar"></div>
-      <div class="bar"></div>
-      <div class="bar"></div>
-    </div>
-    <div class="nav-links" id="navLinks">
-      <a href="#" onclick="switchPage('homePage', this)" class="active">Home</a>
-      <a href="#" onclick="switchPage('playlistPage', this)">Playlist</a>
-      <a href="#" onclick="switchPage('recentlyPlayedPage', this)">Recent</a>
-    </div>
-    <button class="theme-toggle" onclick="cycleTheme()">🌓</button>
+<div class="navbar">
+  <div class="hamburger-menu" onclick="toggleMobileMenu()">
+    <div class="bar"></div>
+    <div class="bar"></div>
+    <div class="bar"></div>
   </div>
-
-  <div id="homePage" class="page active">
-    <header><h1>AllPlay 🎶</h1></header>
-    <div class="input-group" id="inputGroup">
-      <input type="text" id="search" placeholder="Search your favorite songs..." />
-      <button class="clear-btn" id="clearSearch">×</button>
-    </div>
-    <button id="searchButton">Search</button>
-    <p id="loadingText">🔄 Searching...</p>
-    <ul id="results"></ul>
+  <div class="nav-links" id="navLinks">
+    <a href="#" onclick="switchPage('homePage', this)" class="active">Home</a>
+    <a href="#" onclick="switchPage('playlistPage', this)">Playlist</a>
+    <a href="#" onclick="switchPage('recentlyPlayedPage', this)">Recent</a>
+    <a href="#" onclick="switchPage('settingsPage', this)">Settings</a>
   </div>
+  <button class="theme-toggle" onclick="cycleTheme()">🌓</button>
+</div>
 
-  <div id="playlistPage" class="page">
-    <h2 style="text-align:center; color:var(--accent);">Your Playlists</h2>
-    <div class="playlist-management">
-        <input type="text" id="newPlaylistName" placeholder="New playlist name" />
-        <button onclick="createNewPlaylist()">Create Playlist</button>
-    </div>
-    <select id="activePlaylistSelector" class="playlist-selector" onchange="switchActivePlaylist(this.value)"></select>
-    <div class="playlist-management">
-        <button onclick="editActivePlaylistName()">Edit Name</button>
-        <button onclick="deleteActivePlaylist()">Delete Active</button>
-    </div>
-    <ul id="playlistItems"></ul>
-    <div id="waveformVisualizer">
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-        <div class="waveform-bar"></div><div class="waveform-bar"></div><div class="waveform-bar"></div>
-    </div>
+<div id="homePage" class="page active">
+  <header><h1>AllPlay 🎶</h1></header>
+  <div class="input-group" id="inputGroup">
+    <input type="text" id="search" placeholder="Search for songs..."/>
+    <button class="clear-btn" id="clearSearch">×</button>
   </div>
-
-  <div id="recentlyPlayedPage" class="page">
-    <h2 style="text-align:center; color:var(--accent);">Recently Played</h2>
-    <ul id="recentlyPlayedList"></ul>
-    <button class="small-btn" onclick="clearRecentlyPlayed()" style="display:block; margin: 20px auto;">Clear Recent</button>
+  <button id="searchButton">Search</button>
+  <p id="loadingText">🔄 Searching...</p>
+  <ul id="results"></ul>
+  <div id="recommendations">
+    <h3>🎯 Daily Recommendations</h3>
+    <ul id="recommendList"></ul>
   </div>
+</div>
 
-  <footer>
-    <p>© 2024–2025 All rights reserved. <a href="https://chrohail.com/" target="_blank">Chaudhry Rohail</a></p>
-  </footer>
+<div id="playlistPage" class="page">
+  <h2>Your Playlists</h2>
+  <div class="playlist-management">
+    <input type="text" id="newPlaylistName" placeholder="New playlist name"/>
+    <button onclick="createNewPlaylist()">Create</button>
+  </div>
+  <select id="activePlaylistSelector" onchange="switchActivePlaylist(this.value)"></select>
+  <div class="playlist-management">
+    <button onclick="editActivePlaylistName()">Rename</button>
+    <button onclick="deleteActivePlaylist()">Delete</button>
+  </div>
+  <button id="sharePlaylistBtn" class="small-btn">Share Playlist 🔗</button>
+  <input id="shareLink" readonly style="display:none"/>
+  <ul id="playlistItems"></ul>
+  <div id="waveformVisualizer"></div>
+</div>
 
-  <script src="https://www.youtube.com/iframe_api"></script> 
-  <script src="script.js"></script>
+<div id="recentlyPlayedPage" class="page">
+  <h2>Recently Played</h2>
+  <ul id="recentlyPlayedList"></ul>
+  <button class="small-btn" onclick="clearRecentlyPlayed()">Clear Recent</button>
+</div>
 
+<div id="settingsPage" class="page">
+  <h2>Settings</h2>
+  <label>
+    <input type="checkbox" id="notifyToggle"/> Enable Desktop Notifications
+  </label>
+</div>
+
+<footer>© 2024–2025 AllPlay</footer>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="script.js"></script>
 </body>
+</html>
