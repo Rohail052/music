@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>AllPlay 🎶</title>
-  <link rel="icon" href="./allplay-icon.png"/>
-  <link rel="manifest" href="./manifest.json"/>
+  <link rel="icon" href="allplay-icon.png" />
+  <link rel="manifest" href="manifest.json" />
   <style>
     :root {
       --bg: #f9f9fb;
@@ -37,6 +37,9 @@
       font-family: "Segoe UI", sans-serif;
       background-color: var(--bg);
       color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
     .navbar {
@@ -65,6 +68,8 @@
       font-size: 18px;
       position: relative;
       padding: 5px 0;
+      cursor: pointer;
+      user-select: none;
     }
 
     .nav-links a.active::after {
@@ -137,27 +142,31 @@
       cursor: pointer;
       color: var(--text);
       font-size: 16px;
+      user-select: none;
     }
 
     .page {
       position: absolute;
       top: 0;
-      left: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
       width: 100%;
       max-width: 900px;
       margin: 100px auto 40px;
       padding: 0 20px;
       opacity: 0;
       pointer-events: none;
-      transform: translateY(20px);
-      transition: opacity var(--transition-duration) ease-in-out, transform var(--transition-duration) ease-in-out;
+      transition:
+        opacity var(--transition-duration) ease-in-out,
+        transform var(--transition-duration) ease-in-out;
       z-index: 1;
+      min-height: 70vh;
     }
 
     .page.active {
       opacity: 1;
       pointer-events: auto;
-      transform: translateY(0);
+      transform: translateX(-50%) translateY(0);
       position: relative;
       z-index: 2;
     }
@@ -209,6 +218,7 @@
       font-size: 20px;
       color: var(--accent);
       cursor: pointer;
+      user-select: none;
     }
 
     #searchButton {
@@ -221,6 +231,11 @@
       border-radius: 12px;
       font-size: 16px;
       cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    #searchButton:hover {
+      background: #e23d50;
     }
 
     #loadingText {
@@ -229,6 +244,7 @@
       font-size: 16px;
       margin-bottom: 20px;
       display: none;
+      user-select: none;
     }
 
     ul {
@@ -245,6 +261,7 @@
       cursor: pointer;
       overflow: hidden;
       transition: transform 0.2s ease;
+      user-select: none;
     }
 
     li:hover {
@@ -262,6 +279,7 @@
       height: 60px;
       border-radius: 10px;
       object-fit: cover;
+      user-select: none;
     }
 
     li p {
@@ -277,6 +295,7 @@
       border: none;
       border-radius: 12px;
       margin-top: 15px;
+      user-select: none;
     }
 
     button.small-btn {
@@ -287,6 +306,11 @@
       border-radius: 8px;
       font-size: 14px;
       cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    button.small-btn:hover {
+      background: #e23d50;
     }
 
     .playlist-management {
@@ -297,18 +321,25 @@
       flex-wrap: wrap;
     }
 
-    .playlist-management button, .playlist-management input {
+    .playlist-management button,
+    .playlist-management input {
       padding: 8px 15px;
       border-radius: 8px;
       border: 1px solid var(--accent);
       background: var(--card);
       color: var(--text);
+      user-select: text;
     }
 
     .playlist-management button {
       background: var(--accent);
       color: white;
       cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .playlist-management button:hover {
+      background: #e23d50;
     }
 
     .playlist-selector {
@@ -323,6 +354,7 @@
       margin-left: auto;
       margin-right: auto;
       display: block;
+      user-select: none;
     }
 
     #waveformVisualizer {
@@ -334,6 +366,7 @@
       display: none;
       overflow: hidden;
       position: relative;
+      user-select: none;
     }
 
     .waveform-bar {
@@ -345,9 +378,17 @@
     }
 
     @keyframes waveform-animation {
-      0% { height: 10%; }
-      50% { height: 80%; }
-      100% { height: 10%; }
+      0% {
+        height: 10%;
+      }
+
+      50% {
+        height: 80%;
+      }
+
+      100% {
+        height: 10%;
+      }
     }
 
     footer {
@@ -355,78 +396,127 @@
       color: #aaa;
       margin: 60px 0 20px;
       font-size: 14px;
+      user-select: none;
     }
 
     footer a {
       color: var(--accent);
+      user-select: none;
     }
   </style>
 </head>
 <body data-theme="light">
+  <div class="navbar">
+    <div class="hamburger-menu" onclick="toggleMobileMenu()">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="#" class="active">Home</a>
+      <a href="#">Playlist</a>
+      <a href="#">Recent</a>
+      <a href="#">Settings</a>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  </div>
 
-<div class="navbar">
-  <div class="hamburger-menu" onclick="toggleMobileMenu()">
-    <div class="bar"></div>
-    <div class="bar"></div>
-    <div class="bar"></div>
+  <div id="homePage" class="page active">
+    <h1>AllPlay 🎶</h1>
+    <div class="input-group" id="inputGroup">
+      <input id="search" type="text" placeholder="Search for songs..." />
+      <button id="clearSearch" class="clear-btn">×</button>
+    </div>
+    <button id="searchButton">Search</button>
+    <p id="loadingText" style="text-align:center; display:none;">🔍 Searching…</p>
+    <ul id="results"></ul>
   </div>
-  <div class="nav-links" id="navLinks">
-    <a href="#" onclick="switchPage('homePage', this)" class="active">Home</a>
-    <a href="#" onclick="switchPage('playlistPage', this)">Playlist</a>
-    <a href="#" onclick="switchPage('recentlyPlayedPage', this)">Recent</a>
-    <a href="#" onclick="switchPage('settingsPage', this)">Settings</a>
-  </div>
-  <button class="theme-toggle" onclick="cycleTheme()">🌓</button>
-</div>
 
-<div id="homePage" class="page active">
-  <header><h1>AllPlay 🎶</h1></header>
-  <div class="input-group" id="inputGroup">
-    <input type="text" id="search" placeholder="Search for songs..."/>
-    <button class="clear-btn" id="clearSearch">×</button>
-  </div>
-  <button id="searchButton">Search</button>
-  <p id="loadingText">🔄 Searching...</p>
-  <ul id="results"></ul>
-  <div id="recommendations">
-    <h3>🎯 Daily Recommendations</h3>
-    <ul id="recommendList"></ul>
-  </div>
-</div>
-
-<div id="playlistPage" class="page">
-  <h2>Your Playlists</h2>
-  <div class="playlist-management">
-    <input type="text" id="newPlaylistName" placeholder="New playlist name"/>
+  <div id="playlistPage" class="page">
+    <h2>Your Playlist</h2>
+    <input type="text" id="newPlaylistName" placeholder="New playlist name" />
     <button onclick="createNewPlaylist()">Create</button>
-  </div>
-  <select id="activePlaylistSelector" onchange="switchActivePlaylist(this.value)"></select>
-  <div class="playlist-management">
+    <br /><br />
+    <button onclick="exportPlaylist()" class="small-btn">Export to iCloud</button>
+    <button onclick="importPlaylist()" class="small-btn">Import Playlist</button>
+    <br /><br />
+    <select id="activePlaylistSelector" onchange="switchActivePlaylist(this.value)"></select>
+    <br />
     <button onclick="editActivePlaylistName()">Rename</button>
     <button onclick="deleteActivePlaylist()">Delete</button>
+    <br />
+    <button id="sharePlaylistBtn">Share Playlist 🔗</button>
+    <input
+      type="text"
+      id="shareLink"
+      readonly
+      style="width: 100%; margin-top: 10px; display: none"
+    />
+    <ul id="playlistItems"></ul>
   </div>
-  <button id="sharePlaylistBtn" class="small-btn">Share Playlist 🔗</button>
-  <input id="shareLink" readonly style="display:none"/>
-  <ul id="playlistItems"></ul>
-  <div id="waveformVisualizer"></div>
-</div>
 
-<div id="recentlyPlayedPage" class="page">
-  <h2>Recently Played</h2>
-  <ul id="recentlyPlayedList"></ul>
-  <button class="small-btn" onclick="clearRecentlyPlayed()">Clear Recent</button>
-</div>
+  <div id="recentPage" class="page">
+    <h2>Recently Played</h2>
+    <button onclick="clearRecentlyPlayed()" class="small-btn">Clear Recent</button>
+    <ul id="recentlyPlayedList"></ul>
+  </div>
 
-<div id="settingsPage" class="page">
-  <h2>Settings</h2>
-  <label>
-    <input type="checkbox" id="notifyToggle"/> Enable Desktop Notifications
-  </label>
-</div>
+  <div id="settingsPage" class="page">
+    <h2>Settings</h2>
+    <label>
+      <input type="checkbox" id="notifyToggle" /> Enable Notifications
+    </label>
+  </div>
+<footer>© 2024–2025 AllPlay 🎶 by <a href="https://chrohail.com" target="_blank" rel="noopener noreferrer">Chaudhry</a></footer>
+  <script src="script.js"></script>
+  <script>
+    // Mobile menu toggle script (needed here)
+    function toggleMobileMenu() {
+      const navLinks = document.getElementById('navLinks');
+      const hamburgerMenu = document.querySelector('.hamburger-menu');
+      navLinks.classList.toggle('active');
+      hamburgerMenu.classList.toggle('open');
+    }
 
-<footer>© 2024–2025 AllPlay</footer>
+    // Theme toggle
+    function toggleTheme() {
+      const body = document.body;
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
 
-<script src="https://www.youtube.com/iframe_api"></script>
-<script src="script.js"></script>
+    // On load, restore theme preference
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+      }
+    });
+
+    // Nav link switching and active state toggle
+    document.querySelectorAll('#navLinks a').forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        document.querySelectorAll('#navLinks a').forEach(a => a.classList.remove('active'));
+        link.classList.add('active');
+
+        const pageId = link.textContent.trim().toLowerCase() + 'Page';
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        const targetPage = document.getElementById(pageId);
+        if (targetPage) targetPage.classList.add('active');
+
+        // Close mobile menu if open
+        const navLinks = document.getElementById('navLinks');
+        const hamburgerMenu = document.querySelector('.hamburger-menu');
+        navLinks.classList.remove('active');
+        hamburgerMenu.classList.remove('open');
+      });
+    });
+  </script>
 </body>
 </html>
