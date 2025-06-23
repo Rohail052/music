@@ -21,17 +21,17 @@ let activePlaylist = userPlaylists.find(p => p.name === activePlaylistName);
 let recentlyPlayed = JSON.parse(localStorage.getItem('recentlyPlayed')) || [];
 const MAX_RECENT = 10;
 
-let currentPlayer = null;        // either container div or hidden iframe element
-let currentPlayerParent = null;  // the <li> element where player shown
+let currentPlayer = null;
+let currentPlayerParent = null;
 
 window.addEventListener('load', () => {
   elems.notifyToggle.checked = localStorage.getItem('notifyEnabled') === 'true';
-
   renderAll();
   setupNav();
   setupSearch();
   setupClearButton();
   setupNotifyToggle();
+  loadSharedPlaylist();
 });
 
 function setupNav() {
@@ -47,10 +47,7 @@ function setupNav() {
       if (pageToShow) pageToShow.classList.add('active');
       elems.navLinks.classList.remove('active');
       elems.hamburgerMenu.classList.remove('open');
-
-      if (pageId !== 'homePage') {
-        removeCurrentPlayer();
-      }
+      if (pageId !== 'homePage') removeCurrentPlayer();
     });
   });
 }
@@ -95,13 +92,11 @@ function notify(title, msg) {
   }
 }
 
-// --- Search ---
 async function doSearch() {
   const q = elems.searchInput.value.trim();
   if (!q) return alert('Enter something to search.');
   elems.resultsList.innerHTML = '';
   showLoading(true);
-
   try {
     const res = await fetch(`https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=15&q=${encodeURIComponent(q)}&key=${apiKey}`);
     const data = await res.json();
@@ -114,8 +109,7 @@ async function doSearch() {
 }
 
 function showLoading(show) {
-  const loadingText = document.getElementById('loadingText');
-  loadingText.style.display = show ? 'block' : 'none';
+  document.getElementById('loadingText').style.display = show ? 'block' : 'none';
 }
 
 function renderResults(items) {
@@ -123,9 +117,9 @@ function renderResults(items) {
     ? items.map(it => `
       <li tabindex="0" data-id="${it.id.videoId}" data-title="${escapeHtml(it.snippet.title)}">
         <div class="song-title">
-          <img src="https://img.youtube.com/vi/${it.id.videoId}/default.jpg" alt="thumb" />
+          <img src="https://img.youtube.com/vi/${it.id.videoId}/default.jpg" />
           <p>${escapeHtml(it.snippet.title)}</p>
-          <button aria-label="Save ${escapeHtml(it.snippet.title)} to playlist">Save</button>
+          <button>Save</button>
         </div>
         <div class="player-container"></div>
       </li>`).join('')
@@ -133,8 +127,7 @@ function renderResults(items) {
 
   elems.resultsList.querySelectorAll('li').forEach(li => {
     const vid = li.dataset.id, title = li.dataset.title;
-    const saveBtn = li.querySelector('button');
-    saveBtn.onclick = e => {
+    li.querySelector('button').onclick = e => {
       e.stopPropagation();
       saveToPlaylist(title, vid);
     };
@@ -142,83 +135,58 @@ function renderResults(items) {
   });
 }
 
-// --- Escape HTML ---
 function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
 }
 
-// --- Player Handling ---
 function removeCurrentPlayer() {
   if (currentPlayer) {
-    if (currentPlayer.tagName === 'IFRAME') {
-      // Audio-only iframe appended to body
-      currentPlayer.remove();
-    } else if (currentPlayer.classList && currentPlayer.classList.contains('player-container')) {
-      // Normal container div inside li
-      currentPlayer.innerHTML = '';
-      currentPlayer.classList.remove('show', 'audio-only-text');
-    }
+    currentPlayer.remove();
     currentPlayer = null;
   }
   if (currentPlayerParent) {
+    currentPlayerParent.querySelector('.player-container').innerHTML = '';
+    currentPlayerParent.querySelector('.player-container').classList.remove('show', 'audio-only-text');
+    currentPlayerParent.classList.remove('playing');
     currentPlayerParent = null;
   }
 }
 
 function playVideo(vid, title, parentLi) {
   removeCurrentPlayer();
-
-  const isAudioOnly = elems.audioOnlyToggle.checked;
   const container = parentLi.querySelector('.player-container');
+  const isAudioOnly = elems.audioOnlyToggle.checked;
 
   if (isAudioOnly) {
-    // Audio-only: create hidden iframe appended to body, show "Audio Playing" text in container
     const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0&mute=0&enablejsapi=1`;
+    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0&playsinline=1`;
     iframe.style.display = 'none';
     iframe.setAttribute('allow', 'autoplay; encrypted-media');
     iframe.setAttribute('allowfullscreen', '');
-    iframe.dataset.videoId = vid;
-
     document.body.appendChild(iframe);
-
     container.textContent = '🎧 Audio Playing';
     container.classList.add('audio-only-text', 'show');
-
     currentPlayer = iframe;
-    currentPlayerParent = parentLi;
-
   } else {
-    // Normal video iframe visible in container below title
     const iframe = document.createElement('iframe');
-    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0`;
+    iframe.src = `https://www.youtube.com/embed/${vid}?autoplay=1&rel=0&playsinline=1`;
     iframe.setAttribute('allow', 'autoplay; encrypted-media');
     iframe.setAttribute('allowfullscreen', '');
-    iframe.dataset.videoId = vid;
-
     container.appendChild(iframe);
     container.classList.add('show');
-
     currentPlayer = container;
-    currentPlayerParent = parentLi;
   }
 
-  // Highlight the playing li item
-  document.querySelectorAll('li').forEach(li => li.classList.remove('playing'));
+  currentPlayerParent = parentLi;
   parentLi.classList.add('playing');
-
   addRecentlyPlayed(title, vid);
   notify('Playing 🎶', title);
 }
 
-// --- Playlist Management ---
 function saveToPlaylist(title, vid) {
-  if (activePlaylist.songs.some(s => s.videoId === vid)) {
-    alert('Already in playlist.');
-    return;
-  }
+  if (activePlaylist.songs.some(s => s.videoId === vid)) return alert('Already in playlist.');
   activePlaylist.songs.push({ title, videoId: vid, favorite: false });
   saveAll();
   renderPlaylist();
@@ -229,9 +197,9 @@ function renderPlaylist() {
   elems.playlistItems.innerHTML = activePlaylist.songs.length
     ? activePlaylist.songs.map((s, i) => `
       <li tabindex="0" data-idx="${i}" data-id="${s.videoId}" data-title="${escapeHtml(s.title)}">
-        <div class="song-title" style="cursor:pointer; display:flex; align-items:center; gap: 15px;">
-          <img src="https://img.youtube.com/vi/${s.videoId}/default.jpg" alt="thumb" />
-          <p style="flex:1;">${escapeHtml(s.title)}</p>
+        <div class="song-title">
+          <img src="https://img.youtube.com/vi/${s.videoId}/default.jpg" />
+          <p>${escapeHtml(s.title)}</p>
           <button title="Toggle Favorite">${s.favorite ? '★' : '☆'}</button>
           <button title="Remove">Remove</button>
         </div>
@@ -240,29 +208,23 @@ function renderPlaylist() {
     : '<p>Empty playlist.</p>';
 
   elems.playlistItems.querySelectorAll('li').forEach(li => {
-    const vid = li.dataset.id, title = li.dataset.title, idx = +li.dataset.idx;
-    const favBtn = li.querySelector('button[title="Toggle Favorite"]');
-    const remBtn = li.querySelector('button[title="Remove"]');
-    const song = activePlaylist.songs[idx];
-
-    favBtn.onclick = e => {
+    const idx = +li.dataset.idx, song = activePlaylist.songs[idx];
+    li.querySelector('button[title="Toggle Favorite"]').onclick = e => {
       e.stopPropagation();
       song.favorite = !song.favorite;
       saveAll();
       renderPlaylist();
     };
-    remBtn.onclick = e => {
+    li.querySelector('button[title="Remove"]').onclick = e => {
       e.stopPropagation();
       activePlaylist.songs.splice(idx, 1);
       saveAll();
       renderPlaylist();
     };
-
-    li.querySelector('.song-title').onclick = () => playVideo(vid, title, li);
+    li.querySelector('.song-title').onclick = () => playVideo(song.videoId, song.title, li);
   });
 }
 
-// --- Recently Played ---
 function addRecentlyPlayed(title, vid) {
   recentlyPlayed = recentlyPlayed.filter(r => r.videoId !== vid);
   recentlyPlayed.unshift({ title, videoId: vid });
@@ -274,11 +236,11 @@ function addRecentlyPlayed(title, vid) {
 function renderRecentlyPlayed() {
   elems.recentlyPlayedList.innerHTML = recentlyPlayed.length
     ? recentlyPlayed.map(r => `
-      <li tabindex="0" data-id="${r.videoId}" data-title="${escapeHtml(r.title)}">
+      <li data-id="${r.videoId}" data-title="${escapeHtml(r.title)}">
         <div class="song-title">
-          <img src="https://img.youtube.com/vi/${r.videoId}/default.jpg" alt="thumb" />
+          <img src="https://img.youtube.com/vi/${r.videoId}/default.jpg" />
           <p>${escapeHtml(r.title)}</p>
-          <button aria-label="Play ${escapeHtml(r.title)}">Play</button>
+          <button>Play</button>
         </div>
         <div class="player-container"></div>
       </li>`).join('')
@@ -286,10 +248,7 @@ function renderRecentlyPlayed() {
 
   elems.recentlyPlayedList.querySelectorAll('li').forEach(li => {
     const vid = li.dataset.id, title = li.dataset.title;
-    li.querySelector('button').onclick = e => {
-      e.stopPropagation();
-      playVideo(vid, title, li);
-    };
+    li.querySelector('button').onclick = () => playVideo(vid, title, li);
     li.querySelector('.song-title').onclick = () => playVideo(vid, title, li);
   });
 }
@@ -301,10 +260,8 @@ function clearRecentlyPlayed() {
   renderRecentlyPlayed();
 }
 
-// --- Playlist CRUD ---
 function createNewPlaylist() {
-  const nameInput = document.getElementById('newPlaylistName');
-  const name = nameInput.value.trim();
+  const name = document.getElementById('newPlaylistName').value.trim();
   if (!name) return alert('Enter playlist name.');
   if (userPlaylists.some(p => p.name === name)) return alert('Playlist already exists.');
   userPlaylists.push({ name, songs: [] });
@@ -312,7 +269,6 @@ function createNewPlaylist() {
   activePlaylist = userPlaylists.at(-1);
   saveAll();
   renderAll();
-  nameInput.value = '';
 }
 
 function editActivePlaylistName() {
@@ -342,13 +298,19 @@ function switchActivePlaylist(name) {
   renderPlaylist();
 }
 
-// --- Share ---
-function handleShare() {
-  const payload = encodeURIComponent(JSON.stringify(activePlaylist));
-  const link = `${location.origin}${location.pathname}?share=${payload}`;
-  alert('Shareable Link (copied to clipboard):\n\n' + link);
-  navigator.clipboard.writeText(link).catch(() => {});
+function saveAll() {
+  localStorage.setItem('userPlaylists', JSON.stringify(userPlaylists));
+  localStorage.setItem('activePlaylistName', activePlaylistName);
+  localStorage.setItem('recentlyPlayed', JSON.stringify(recentlyPlayed));
 }
+
+function renderAll() {
+  elems.activePlaylistSelector.innerHTML = userPlaylists.map(p => `<option>${escapeHtml(p.name)}</option>`).join('');
+  elems.activePlaylistSelector.value = activePlaylistName;
+  renderPlaylist();
+  renderRecentlyPlayed();
+}
+
 function loadSharedPlaylist() {
   const shareParam = new URLSearchParams(location.search).get('share');
   if (!shareParam) return;
@@ -363,60 +325,4 @@ function loadSharedPlaylist() {
   } catch {
     console.error('Invalid shared playlist data');
   }
-}
-
-// --- Export/Import ---
-function exportPlaylist() {
-  try {
-    const data = JSON.stringify(userPlaylists, null, 2);
-    const blob = new Blob([data], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'allplay_playlists_backup.json';
-    a.click();
-    URL.revokeObjectURL(url);
-    notify('Exported', 'Playlists exported for backup');
-  } catch (e) {
-    alert('Failed to export playlists.');
-  }
-}
-
-function importPlaylist() {
-  const input = document.createElement('input');
-  input.type = 'file';
-  input.accept = 'application/json';
-  input.onchange = e => {
-    const file = e.target.files[0];
-    if (!file) return;
-    file.text().then(text => {
-      try {
-        const imported = JSON.parse(text);
-        if (!Array.isArray(imported)) throw 'Invalid format';
-        userPlaylists = imported;
-        activePlaylist = userPlaylists[0];
-        activePlaylistName = activePlaylist.name;
-        saveAll();
-        renderAll();
-        notify('Imported', 'Playlists imported from backup');
-      } catch {
-        alert('Invalid backup file.');
-      }
-    });
-  };
-  input.click();
-}
-
-// --- Save & Render ---
-function saveAll() {
-  localStorage.setItem('userPlaylists', JSON.stringify(userPlaylists));
-  localStorage.setItem('activePlaylistName', activePlaylistName);
-  localStorage.setItem('recentlyPlayed', JSON.stringify(recentlyPlayed));
-}
-
-function renderAll() {
-  elems.activePlaylistSelector.innerHTML = userPlaylists.map(p => `<option>${escapeHtml(p.name)}</option>`).join('');
-  elems.activePlaylistSelector.value = activePlaylistName;
-  renderPlaylist();
-  renderRecentlyPlayed();
 }
