@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>AllPlay 🎶</title>
+  <style>
+    :root {
+      --bg: #ffe5e8;
+      --text: #330000;
+      --accent: #ff0044;
+      --card: #fff0f0;
+      --glass: rgba(255, 0, 68, 0.15);
+      --shadow: 0 4px 12px rgba(255, 0, 68, 0.2);
+      --transition-duration: 0.4s;
+    }
+    [data-theme="dark"] {
+      --bg: #330011;
+      --text: #ffccd7;
+      --card: #440022;
+      --glass: rgba(255, 0, 68, 0.3);
+      --shadow: 0 4px 12px rgba(255, 0, 68, 0.6);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      transition: all 0.3s ease;
+    }
+
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .navbar {
+      position: fixed;
+      width: 100%;
+      top: 0;
+      background: var(--glass);
+      backdrop-filter: blur(15px);
+      box-shadow: var(--shadow);
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 15px 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 40px;
+    }
+
+    .nav-links a {
+      color: var(--accent);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 18px;
+      position: relative;
+      padding: 5px 0;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .nav-links a.active::after {
+      content: "";
+      position: absolute;
+      bottom: -5px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .hamburger-menu {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      padding: 5px;
+    }
+
+    .hamburger-menu .bar {
+      width: 25px;
+      height: 3px;
+      background-color: var(--text);
+      margin: 4px 0;
+      transition: 0.4s;
+    }
+
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 60px;
+        left: 0;
+        background: var(--glass);
+        box-shadow: var(--shadow);
+        padding: 10px 20px;
+        align-items: flex-start;
+        gap: 15px;
+      }
+
+      .nav-links.active {
+        display: flex;
+      }
+
+      .hamburger-menu {
+        display: flex;
+      }
+
+      .hamburger-menu.open .bar:nth-child(1) {
+        transform: rotate(-45deg) translate(-5px, 6px);
+      }
+
+      .hamburger-menu.open .bar:nth-child(2) {
+        opacity: 0;
+      }
+
+      .hamburger-menu.open .bar:nth-child(3) {
+        transform: rotate(45deg) translate(-5px, -6px);
+      }
+    }
+
+    .theme-toggle {
+      background: var(--glass);
+      border: none;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 16px;
+      user-select: none;
+    }
+
+    .page {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%) translateY(20px);
+      width: 100%;
+      max-width: 900px;
+      margin: 100px auto 40px;
+      padding: 0 20px;
+      opacity: 0;
+      pointer-events: none;
+      transition:
+        opacity var(--transition-duration) ease-in-out,
+        transform var(--transition-duration) ease-in-out;
+      z-index: 1;
+      min-height: 70vh;
+    }
+
+    .page.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translateX(-50%) translateY(0);
+      position: relative;
+      z-index: 2;
+    }
+
+    header h1, .page h2 {
+      text-align: center;
+      color: var(--accent);
+      margin-bottom: 20px;
+      user-select: none;
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      align-items: center;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: var(--shadow);
+      max-width: 500px;
+      margin: 0 auto 20px;
+      border: 2px solid transparent;
+    }
+
+    .input-group.active {
+      border-color: var(--accent);
+    }
+
+    .input-group::before {
+      content: "🔍";
+      margin-right: 10px;
+      font-size: 20px;
+      color: var(--accent);
+    }
+
+    .input-group input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .clear-btn {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: var(--accent);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    #searchButton {
+      display: block;
+      margin: 10px auto 10px;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    #searchButton:hover {
+      background: #cc0033;
+    }
+
+    #loadingText {
+      text-align: center;
+      color: var(--accent);
+      font-size: 16px;
+      margin-bottom: 20px;
+      display: none;
+      user-select: none;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    li {
+      background: var(--card);
+      border-radius: 14px;
+      margin: 15px 0;
+      padding: 15px;
+      box-shadow: var(--shadow);
+      user-select: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    li .song-title {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      user-select: text;
+    }
+
+    li .song-title img {
+      width: 60px;
+      height: 60px;
+      border-radius: 10px;
+      object-fit: cover;
+      user-select: none;
+    }
+
+    li .song-title p {
+      margin: 0;
+      flex: 1;
+    }
+
+    li .song-title button {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+      height: 34px;
+      align-self: center;
+    }
+
+    li .song-title button:hover {
+      background: #cc0033;
+    }
+
+    .player-container {
+      width: 100%;
+      max-width: 640px;
+      height: 360px;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      background: var(--card);
+      user-select: none;
+      display: none;
+      position: relative;
+    }
+
+    .player-container iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .player-container.audio-only-text {
+      display: flex !important;
+      justify-content: center;
+      align-items: center;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--accent);
+      font-style: italic;
+      height: 40px;
+    }
+
+    .player-container.show {
+      display: block;
+    }
+
+    .playlist-management {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .playlist-management button,
+    .playlist-management input {
+      padding: 8px 15px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--card);
+      color: var(--text);
+      user-select: text;
+      font-size: 14px;
+    }
+
+    .playlist-management button {
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 0.3s ease;
+    }
+    .playlist-management button:hover {
+      background: #cc0033;
+    }
+
+    .playlist-selector {
+      width: 100%;
+      padding: 8px;
+      border-radius: 8px;
+      border: 1px solid var(--accent);
+      background: var(--card);
+      color: var(--text);
+      margin-bottom: 15px;
+      max-width: 400px;
+      margin-left: auto;
+      margin-right: auto;
+      display: block;
+      user-select: none;
+      font-size: 14px;
+    }
+
+    footer {
+      text-align: center;
+      color: #aa0055;
+      margin: 60px 0 20px;
+      font-size: 14px;
+      user-select: none;
+    }
+
+    footer a {
+      color: var(--accent);
+      user-select: none;
+    }
+  </style>
+</head>
+<body data-theme="light">
+  <div class="navbar">
+    <div class="hamburger-menu" onclick="toggleMobileMenu()">
+      <div class="bar"></div>
+      <div class="bar"></div>
+      <div class="bar"></div>
+    </div>
+    <div class="nav-links" id="navLinks">
+      <a href="#" class="active">Home</a>
+      <a href="#">Playlist</a>
+      <a href="#">Recent</a>
+      <a href="#">Settings</a>
+    </div>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+  </div>
+
+  <div id="homePage" class="page active">
+    <h1>AllPlay 🎶</h1>
+
+    <div class="input-group" id="inputGroup">
+      <input id="search" type="text" placeholder="Search for songs..." autocomplete="off" />
+      <button id="clearSearch" class="clear-btn">×</button>
+    </div>
+    <button id="searchButton">Search</button>
+
+    <label style="text-align:center; margin-top:10px; display: block; cursor:pointer; user-select:none;">
+      <input type="checkbox" id="audioOnlyToggle" /> Enable Audio-Only Mode
+    </label>
+
+    <p id="loadingText" style="text-align:center; display:none;">🔍 Searching…</p>
+    <ul id="results"></ul>
+  </div>
+
+  <div id="playlistPage" class="page">
+    <h2>Your Playlist</h2>
+    <div class="playlist-management">
+      <input type="text" id="newPlaylistName" placeholder="New playlist name" autocomplete="off"/>
+      <button onclick="createNewPlaylist()">Create</button>
+    </div>
+    <div style="text-align:center; margin-bottom: 15px;">
+      <button onclick="exportPlaylist()" class="small-btn">Export Playlists</button>
+      <button onclick="importPlaylist()" class="small-btn">Import Playlists</button>
+    </div>
+    <select id="activePlaylistSelector" onchange="switchActivePlaylist(this.value)" class="playlist-selector"></select>
+    <div style="text-align:center; margin-bottom: 10px;">
+      <button onclick="editActivePlaylistName()">Rename Playlist</button>
+      <button onclick="deleteActivePlaylist()">Delete Playlist</button>
+    </div>
+    <ul id="playlistItems"></ul>
+  </div>
+
+  <div id="recentPage" class="page">
+    <h2>Recently Played</h2>
+    <button onclick="clearRecentlyPlayed()" class="small-btn">Clear Recent</button>
+    <ul id="recentlyPlayedList"></ul>
+  </div>
+
+  <div id="settingsPage" class="page">
+    <h2>Settings</h2>
+    <label style="user-select:none;">
+      <input type="checkbox" id="notifyToggle" /> Enable Notifications
+    </label>
+  </div>
+
+<footer>© 2024–2025 AllPlay 🎶 by <a href="https://chrohail.com" target="_blank" rel="noopener noreferrer">Chaudhry</a></footer>
+
+  <script src="script.js"></script>
+  <script>
+    // Nav & Theme toggle scripts
+
+    function toggleMobileMenu() {
+      const navLinks = document.getElementById('navLinks');
+      const hamburgerMenu = document.querySelector('.hamburger-menu');
+      navLinks.classList.toggle('active');
+      hamburgerMenu.classList.toggle('open');
+    }
+
+    function toggleTheme() {
+      const body = document.body;
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const savedTheme = localStorage.getItem('theme');
+      if (savedTheme) {
+        document.body.setAttribute('data-theme', savedTheme);
+      }
+    });
+  </script>
+</body>
+</html>
